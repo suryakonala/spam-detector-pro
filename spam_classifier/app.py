@@ -108,8 +108,8 @@ div.stButton > button:hover {
 
 @st.cache_resource
 def load_model():
-    model = joblib.load("spam_model.pkl")
-    vectorizer = joblib.load("vectorizer.pkl")
+    model = joblib.load("spam_classifier/spam_model.pkl")
+    vectorizer = joblib.load("spam_classifier/vectorizer.pkl")
     return model, vectorizer
 
 model, vectorizer = load_model()
@@ -211,4 +211,5 @@ if uploaded_file:
     if prediction[0] == 1:
         st.markdown("<h3 style='color:#ff4b4b;'>❌ This file is SPAM</h3>", unsafe_allow_html=True)
     else:
+
         st.markdown("<h3 style='color:#00ff99;'>✅ This file is NOT SPAM</h3>", unsafe_allow_html=True)
