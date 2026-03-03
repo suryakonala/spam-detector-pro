@@ -1,101 +1,87 @@
 import streamlit as st
 import joblib
+import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn.metrics import confusion_matrix, accuracy_score
 
-# ---------------- PAGE CONFIG ----------------
-st.set_page_config(
-    page_title="Spam Mail Detector AI",
-    page_icon="📧",
-    layout="wide"
-)
+st.set_page_config(page_title="Cyberpunk Spam Detector", page_icon="📧", layout="wide")
 
-# ---------------- CYBERPUNK THEME ----------------
+# ===============================
+# 🌌 FULL CYBERPUNK THEME
+# ===============================
+
 st.markdown("""
 <style>
 
 /* Animated Gradient Background */
 .stApp {
-    background: linear-gradient(-45deg, #0f0c29, #302b63, #ff00cc, #00ffe7);
+    background: linear-gradient(-45deg, #0f0c29, #302b63, #ff00cc, #00ffff);
     background-size: 400% 400%;
-    animation: gradientMove 12s ease infinite;
-    color: white;
+    animation: gradientBG 15s ease infinite;
 }
 
-@keyframes gradientMove {
+@keyframes gradientBG {
     0% {background-position: 0% 50%;}
     50% {background-position: 100% 50%;}
     100% {background-position: 0% 50%;}
 }
 
-/* Sidebar Dark */
+/* Main text */
+body, p, div, span, label {
+    color: #00ffff !important;
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: #ff00ff !important;
+    text-shadow: 0 0 20px #ff00ff;
+}
+
+/* Sidebar */
 section[data-testid="stSidebar"] {
-    background-color: #0a0a0a;
-    color: white;
+    background-color: #0a0a0a !important;
 }
 
-/* Glass Effect Card */
-.glass {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(15px);
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 0 20px rgba(0,255,231,0.4);
-}
-
-/* Title */
-.main-title {
-    font-size: 52px;
-    font-weight: 800;
-    text-align: center;
-    color: #00ffe7;
-    text-shadow: 0 0 15px #00ffe7;
-}
-
-/* Input Label */
-.sub-title {
-    font-size: 22px;
-    font-weight: 600;
-    color: white;
-}
-
-/* Text Area Fix */
+/* Text Area */
 textarea {
-    background-color: rgba(0,0,0,0.6) !important;
-    color: white !important;
-    border: 2px solid #00ffe7 !important;
+    background-color: #111 !important;
+    color: #00ffff !important;
+    border: 2px solid #ff00ff !important;
+    font-size: 18px !important;
 }
 
-/* Button */
-.stButton>button {
-    background-color: #00ffe7;
-    color: black;
-    font-weight: bold;
-    border-radius: 8px;
+/* Chat Input */
+div[data-testid="stChatInput"] textarea {
+    background-color: #000 !important;
+    border: 2px solid #ff00ff !important;
+    color: #00ffff !important;
 }
 
-/* Result Boxes */
-.safe-box {
-    background-color: #00c853;
-    padding: 18px;
-    border-radius: 12px;
-    font-size: 20px;
+/* Buttons */
+div.stButton > button {
+    background: black !important;
+    color: #00ffff !important;
+    border: 2px solid #ff00ff !important;
+    box-shadow: 0 0 15px #ff00ff;
     font-weight: bold;
-    text-align: center;
 }
 
-.spam-box {
-    background-color: #d50000;
-    padding: 18px;
-    border-radius: 12px;
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
+div.stButton > button:hover {
+    box-shadow: 0 0 25px #00ffff;
+}
+
+/* Remove white block background */
+.block-container {
+    background: transparent !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- LOAD MODEL ----------------
+# ===============================
+# LOAD MODEL (FIXED PATHS)
+# ===============================
+
 @st.cache_resource
 def load_model():
     model = joblib.load("spam_classifier/spam_model.pkl")
@@ -104,43 +90,101 @@ def load_model():
 
 model, vectorizer = load_model()
 
-# ---------------- SIDEBAR ----------------
-st.sidebar.markdown("## 📊 Model Statistics")
+# ===============================
+# SIDEBAR STATS
+# ===============================
+
+st.sidebar.header("📊 Model Statistics")
+
 data = pd.read_csv("spam_classifier/spam.csv")
-accuracy = 92.31
-st.sidebar.write(f"Accuracy: {accuracy}%")
-st.sidebar.progress(int(accuracy))
+data['label'] = data['label'].map({'ham': 0, 'spam': 1})
 
-# ---------------- MAIN UI ----------------
-st.markdown('<div class="main-title">📧 Spam Mail Detector AI</div>', unsafe_allow_html=True)
-st.markdown("<br>", unsafe_allow_html=True)
+X = vectorizer.transform(data['text'])
+y = data['label']
+y_pred = model.predict(X)
 
-st.markdown('<div class="glass">', unsafe_allow_html=True)
+acc = accuracy_score(y, y_pred)
+st.sidebar.write(f"Accuracy: {round(acc*100,2)}%")
 
-st.markdown('<div class="sub-title">✉️ Enter your email below:</div>', unsafe_allow_html=True)
+# Accuracy Chart
+fig1, ax1 = plt.subplots()
+ax1.bar(["Accuracy"], [acc*100], color="#00ffff")
+ax1.set_ylim([0,100])
+ax1.set_facecolor("#111")
+fig1.patch.set_facecolor("#111")
+ax1.tick_params(colors='white')
+st.sidebar.pyplot(fig1)
 
-email_text = st.text_area("", height=200)
+# Confusion Matrix
+cm = confusion_matrix(y, y_pred)
 
-if st.button("🔍 Analyze Email"):
-    if email_text.strip() == "":
-        st.warning("Please enter an email message.")
+fig2, ax2 = plt.subplots()
+ax2.imshow(cm, cmap="magma")
+ax2.set_xticks([0,1])
+ax2.set_yticks([0,1])
+ax2.set_xticklabels(["Ham","Spam"])
+ax2.set_yticklabels(["Ham","Spam"])
+ax2.set_facecolor("#111")
+fig2.patch.set_facecolor("#111")
+ax2.tick_params(colors='white')
+
+for i in range(2):
+    for j in range(2):
+        ax2.text(j, i, cm[i,j], ha="center", va="center", color="white")
+
+st.sidebar.pyplot(fig2)
+
+# ===============================
+# CHAT SECTION
+# ===============================
+
+st.markdown("## 🤖 Cyberpunk Spam Detector")
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+user_input = st.chat_input("Type your message...")
+
+if user_input:
+    st.session_state.messages.append(("user", user_input))
+
+    email_vec = vectorizer.transform([user_input])
+    prediction = model.predict(email_vec)
+    prob = model.predict_proba(email_vec)[0]
+    spam_prob = round(prob[1]*100,2)
+
+    if prediction[0] == 1:
+        reply = f"🚨 SPAM DETECTED ({spam_prob}% confidence)"
     else:
-        transformed = vectorizer.transform([email_text])
-        prediction = model.predict(transformed)[0]
-        probability = model.predict_proba(transformed)[0]
+        reply = f"✅ MESSAGE SAFE ({100-spam_prob}% confidence)"
 
-        spam_prob = probability[1] * 100
-        ham_prob = probability[0] * 100
+    st.session_state.messages.append(("bot", reply))
 
-        if prediction == 1:
-            st.markdown(
-                f'<div class="spam-box">🚨 SPAM DETECTED ({spam_prob:.2f}% confidence)</div>',
-                unsafe_allow_html=True
-            )
-        else:
-            st.markdown(
-                f'<div class="safe-box">✅ SAFE EMAIL ({ham_prob:.2f}% confidence)</div>',
-                unsafe_allow_html=True
-            )
+for role, message in st.session_state.messages:
+    if role == "user":
+        st.chat_message("user").write(message)
+    else:
+        st.chat_message("assistant").write(message)
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("---")
+
+# ===============================
+# FILE UPLOAD
+# ===============================
+
+st.markdown("## 📩 Upload Email File (.txt)")
+
+uploaded_file = st.file_uploader("Upload a text file", type=["txt"])
+
+if uploaded_file:
+    content = uploaded_file.read().decode("utf-8")
+    st.write("File Content:")
+    st.write(content)
+
+    email_vec = vectorizer.transform([content])
+    prediction = model.predict(email_vec)
+
+    if prediction[0] == 1:
+        st.markdown("<h3 style='color:#ff4b4b;'>❌ This file is SPAM</h3>", unsafe_allow_html=True)
+    else:
+        st.markdown("<h3 style='color:#00ff99;'>✅ This file is NOT SPAM</h3>", unsafe_allow_html=True)
