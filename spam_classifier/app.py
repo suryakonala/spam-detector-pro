@@ -4,10 +4,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.metrics import confusion_matrix, accuracy_score
 
-st.set_page_config(page_title="Cyberpunk Spam Detector", page_icon="📧", layout="wide")
+st.set_page_config(
+    page_title="Spam Mail Detector AI",
+    page_icon="📧",
+    layout="wide"
+)
 
 # ===============================
-# 🌌 FULL CYBERPUNK THEME
+# 🌌 CYBERPUNK THEME (FINAL)
 # ===============================
 
 st.markdown("""
@@ -26,7 +30,7 @@ st.markdown("""
     100% {background-position: 0% 50%;}
 }
 
-/* Main text */
+/* General Text */
 body, p, div, span, label {
     color: #00ffff !important;
 }
@@ -42,19 +46,30 @@ section[data-testid="stSidebar"] {
     background-color: #0a0a0a !important;
 }
 
-/* Text Area */
-textarea {
-    background-color: #111 !important;
+/* Sidebar text */
+section[data-testid="stSidebar"] * {
     color: #00ffff !important;
+}
+
+/* Chat Input Box */
+div[data-testid="stChatInput"] textarea {
+    background-color: #000000 !important;
+    color: #ffffff !important;   /* typed text visible */
     border: 2px solid #ff00ff !important;
     font-size: 18px !important;
 }
 
-/* Chat Input */
-div[data-testid="stChatInput"] textarea {
-    background-color: #000 !important;
-    border: 2px solid #ff00ff !important;
+/* Placeholder */
+div[data-testid="stChatInput"] textarea::placeholder {
     color: #00ffff !important;
+    opacity: 1 !important;
+}
+
+/* Send Button */
+div[data-testid="stChatInput"] button {
+    background-color: #111 !important;
+    color: #00ffff !important;
+    border: 2px solid #ff00ff !important;
 }
 
 /* Buttons */
@@ -70,7 +85,14 @@ div.stButton > button:hover {
     box-shadow: 0 0 25px #00ffff;
 }
 
-/* Remove white block background */
+/* Text Area */
+textarea {
+    background-color: #111 !important;
+    color: #00ffff !important;
+    border: 2px solid #ff00ff !important;
+}
+
+/* Remove white container */
 .block-container {
     background: transparent !important;
 }
@@ -79,7 +101,7 @@ div.stButton > button:hover {
 """, unsafe_allow_html=True)
 
 # ===============================
-# LOAD MODEL (FIXED PATHS)
+# LOAD MODEL (DEPLOYMENT SAFE)
 # ===============================
 
 @st.cache_resource
@@ -91,7 +113,7 @@ def load_model():
 model, vectorizer = load_model()
 
 # ===============================
-# SIDEBAR STATS
+# SIDEBAR MODEL STATISTICS
 # ===============================
 
 st.sidebar.header("📊 Model Statistics")
@@ -103,12 +125,12 @@ X = vectorizer.transform(data['text'])
 y = data['label']
 y_pred = model.predict(X)
 
-acc = accuracy_score(y, y_pred)
-st.sidebar.write(f"Accuracy: {round(acc*100,2)}%")
+accuracy = accuracy_score(y, y_pred)
+st.sidebar.write(f"Accuracy: {round(accuracy*100,2)}%")
 
 # Accuracy Chart
 fig1, ax1 = plt.subplots()
-ax1.bar(["Accuracy"], [acc*100], color="#00ffff")
+ax1.bar(["Accuracy"], [accuracy*100], color="#00ffff")
 ax1.set_ylim([0,100])
 ax1.set_facecolor("#111")
 fig1.patch.set_facecolor("#111")
@@ -135,10 +157,10 @@ for i in range(2):
 st.sidebar.pyplot(fig2)
 
 # ===============================
-# CHAT SECTION
+# MAIN CHAT SECTION
 # ===============================
 
-st.markdown("## 🤖 Cyberpunk Spam Detector")
+st.markdown("## 🤖 Spam Mail Detector AI")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -148,28 +170,25 @@ user_input = st.chat_input("Type your message...")
 if user_input:
     st.session_state.messages.append(("user", user_input))
 
-    email_vec = vectorizer.transform([user_input])
-    prediction = model.predict(email_vec)
-    prob = model.predict_proba(email_vec)[0]
-    spam_prob = round(prob[1]*100,2)
+    email_vector = vectorizer.transform([user_input])
+    prediction = model.predict(email_vector)
+    prob = model.predict_proba(email_vector)[0]
+    spam_probability = round(prob[1] * 100, 2)
 
     if prediction[0] == 1:
-        reply = f"🚨 SPAM DETECTED ({spam_prob}% confidence)"
+        reply = f"🚨 SPAM DETECTED ({spam_probability}% confidence)"
     else:
-        reply = f"✅ MESSAGE SAFE ({100-spam_prob}% confidence)"
+        reply = f"✅ MESSAGE SAFE ({100 - spam_probability}% confidence)"
 
-    st.session_state.messages.append(("bot", reply))
+    st.session_state.messages.append(("assistant", reply))
 
 for role, message in st.session_state.messages:
-    if role == "user":
-        st.chat_message("user").write(message)
-    else:
-        st.chat_message("assistant").write(message)
+    st.chat_message(role).write(message)
 
 st.markdown("---")
 
 # ===============================
-# FILE UPLOAD
+# FILE UPLOAD SECTION
 # ===============================
 
 st.markdown("## 📩 Upload Email File (.txt)")
@@ -181,8 +200,8 @@ if uploaded_file:
     st.write("File Content:")
     st.write(content)
 
-    email_vec = vectorizer.transform([content])
-    prediction = model.predict(email_vec)
+    email_vector = vectorizer.transform([content])
+    prediction = model.predict(email_vector)
 
     if prediction[0] == 1:
         st.markdown("<h3 style='color:#ff4b4b;'>❌ This file is SPAM</h3>", unsafe_allow_html=True)
