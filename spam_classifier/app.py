@@ -1,63 +1,101 @@
 import streamlit as st
 import joblib
 import pandas as pd
-import os
 
-# ----------------------------
-# Page Config
-# ----------------------------
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="Spam Mail Detector AI",
     page_icon="📧",
     layout="wide"
 )
 
-# ----------------------------
-# Custom CSS (Neon Gradient Theme)
-# ----------------------------
+# ---------------- CYBERPUNK THEME ----------------
 st.markdown("""
 <style>
-body {
-    background: linear-gradient(135deg, #1f0036, #ff00cc);
+
+/* Animated Gradient Background */
+.stApp {
+    background: linear-gradient(-45deg, #0f0c29, #302b63, #ff00cc, #00ffe7);
+    background-size: 400% 400%;
+    animation: gradientMove 12s ease infinite;
     color: white;
 }
 
-.big-title {
-    font-size: 48px;
+@keyframes gradientMove {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+
+/* Sidebar Dark */
+section[data-testid="stSidebar"] {
+    background-color: #0a0a0a;
+    color: white;
+}
+
+/* Glass Effect Card */
+.glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,255,231,0.4);
+}
+
+/* Title */
+.main-title {
+    font-size: 52px;
     font-weight: 800;
     text-align: center;
     color: #00ffe7;
+    text-shadow: 0 0 15px #00ffe7;
 }
 
-.sub-text {
-    font-size: 20px;
+/* Input Label */
+.sub-title {
+    font-size: 22px;
     font-weight: 600;
     color: white;
 }
 
-.result-safe {
+/* Text Area Fix */
+textarea {
+    background-color: rgba(0,0,0,0.6) !important;
+    color: white !important;
+    border: 2px solid #00ffe7 !important;
+}
+
+/* Button */
+.stButton>button {
+    background-color: #00ffe7;
+    color: black;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+/* Result Boxes */
+.safe-box {
     background-color: #00c853;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 18px;
+    border-radius: 12px;
     font-size: 20px;
     font-weight: bold;
     text-align: center;
 }
 
-.result-spam {
+.spam-box {
     background-color: #d50000;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 18px;
+    border-radius: 12px;
     font-size: 20px;
     font-weight: bold;
     text-align: center;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------------------
-# Load Model (Correct Paths)
-# ----------------------------
+# ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
     model = joblib.load("spam_classifier/spam_model.pkl")
@@ -66,36 +104,24 @@ def load_model():
 
 model, vectorizer = load_model()
 
-# ----------------------------
-# Sidebar - Model Stats
-# ----------------------------
-st.sidebar.title("📊 Model Statistics")
-
+# ---------------- SIDEBAR ----------------
+st.sidebar.markdown("## 📊 Model Statistics")
 data = pd.read_csv("spam_classifier/spam.csv")
-accuracy = 92.31  # Your trained accuracy (change if needed)
-
+accuracy = 92.31
 st.sidebar.write(f"Accuracy: {accuracy}%")
-
 st.sidebar.progress(int(accuracy))
 
-# ----------------------------
-# Main Title
-# ----------------------------
-st.markdown('<p class="big-title">📧 Spam Mail Detector AI</p>', unsafe_allow_html=True)
-st.markdown("---")
+# ---------------- MAIN UI ----------------
+st.markdown('<div class="main-title">📧 Spam Mail Detector AI</div>', unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# ----------------------------
-# Input Area
-# ----------------------------
-st.markdown('<p class="sub-text">✉️ Enter your email message below:</p>', unsafe_allow_html=True)
+st.markdown('<div class="glass">', unsafe_allow_html=True)
 
-email_text = st.text_area("Enter Email", height=180)
+st.markdown('<div class="sub-title">✉️ Enter your email below:</div>', unsafe_allow_html=True)
 
-# ----------------------------
-# Prediction Button
-# ----------------------------
+email_text = st.text_area("", height=200)
+
 if st.button("🔍 Analyze Email"):
-
     if email_text.strip() == "":
         st.warning("Please enter an email message.")
     else:
@@ -108,11 +134,13 @@ if st.button("🔍 Analyze Email"):
 
         if prediction == 1:
             st.markdown(
-                f'<div class="result-spam">🚨 SPAM DETECTED ({spam_prob:.2f}% confidence)</div>',
+                f'<div class="spam-box">🚨 SPAM DETECTED ({spam_prob:.2f}% confidence)</div>',
                 unsafe_allow_html=True
             )
         else:
             st.markdown(
-                f'<div class="result-safe">✅ SAFE EMAIL ({ham_prob:.2f}% confidence)</div>',
+                f'<div class="safe-box">✅ SAFE EMAIL ({ham_prob:.2f}% confidence)</div>',
                 unsafe_allow_html=True
             )
+
+st.markdown('</div>', unsafe_allow_html=True)
