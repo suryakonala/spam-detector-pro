@@ -11,97 +11,96 @@ st.set_page_config(
 )
 
 # ===============================
-# 🌌 CYBERPUNK THEME (FINAL)
+# 🎨 THEME SWITCHER
 # ===============================
 
-st.markdown("""
+theme = st.sidebar.radio(
+    "🌈 Select Theme",
+    ["🌌 Neon Cyberpunk", "🌙 Dark Mode", "☀ Light Mode", "💎 Glass UI"]
+)
+
+if theme == "🌌 Neon Cyberpunk":
+    background = "linear-gradient(-45deg, #0f0c29, #302b63, #ff00cc, #00ffff)"
+    text_color = "#00ffff"
+    heading_color = "#ff00ff"
+
+elif theme == "🌙 Dark Mode":
+    background = "#0e1117"
+    text_color = "#ffffff"
+    heading_color = "#00ffff"
+
+elif theme == "☀ Light Mode":
+    background = "#ffffff"
+    text_color = "#000000"
+    heading_color = "#ff4b4b"
+
+else:  # Glass UI
+    background = "linear-gradient(to right, #141e30, #243b55)"
+    text_color = "#ffffff"
+    heading_color = "#00ffff"
+
+# ===============================
+# APPLY THEME CSS
+# ===============================
+
+st.markdown(f"""
 <style>
-
-/* Animated Gradient Background */
-.stApp {
-    background: linear-gradient(-45deg, #0f0c29, #302b63, #ff00cc, #00ffff);
+.stApp {{
+    background: {background};
     background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-}
+}}
 
-@keyframes gradientBG {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
-}
+body, p, div, span, label {{
+    color: {text_color} !important;
+}}
 
-/* General Text */
-body, p, div, span, label {
-    color: #00ffff !important;
-}
+h1, h2, h3 {{
+    color: {heading_color} !important;
+}}
 
-/* Headings */
-h1, h2, h3 {
-    color: #ff00ff !important;
-    text-shadow: 0 0 20px #ff00ff;
-}
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
+section[data-testid="stSidebar"] {{
     background-color: #0a0a0a !important;
-}
+}}
 
-/* Sidebar text */
-section[data-testid="stSidebar"] * {
-    color: #00ffff !important;
-}
+.block-container {{
+    background: transparent !important;
+}}
 
-/* Chat Input Box */
-div[data-testid="stChatInput"] textarea {
+div[data-testid="stChatInput"] textarea {{
     background-color: #000000 !important;
-    color: #ffffff !important;   /* typed text visible */
+    color: #ffffff !important;
     border: 2px solid #ff00ff !important;
     font-size: 18px !important;
-}
+}}
 
-/* Placeholder */
-div[data-testid="stChatInput"] textarea::placeholder {
+div[data-testid="stChatInput"] textarea::placeholder {{
     color: #00ffff !important;
     opacity: 1 !important;
-}
+}}
 
-/* Send Button */
-div[data-testid="stChatInput"] button {
+div[data-testid="stChatInput"] button {{
     background-color: #111 !important;
     color: #00ffff !important;
     border: 2px solid #ff00ff !important;
-}
+}}
 
-/* Buttons */
-div.stButton > button {
+div.stButton > button {{
     background: black !important;
     color: #00ffff !important;
     border: 2px solid #ff00ff !important;
-    box-shadow: 0 0 15px #ff00ff;
     font-weight: bold;
-}
+}}
 
-div.stButton > button:hover {
-    box-shadow: 0 0 25px #00ffff;
-}
-
-/* Text Area */
-textarea {
+textarea {{
     background-color: #111 !important;
     color: #00ffff !important;
     border: 2px solid #ff00ff !important;
-}
-
-/* Remove white container */
-.block-container {
-    background: transparent !important;
-}
-
+}}
 </style>
 """, unsafe_allow_html=True)
 
 # ===============================
-# LOAD MODEL (DEPLOYMENT SAFE)
+# LOAD MODEL (DEPLOY SAFE)
 # ===============================
 
 @st.cache_resource
@@ -113,7 +112,7 @@ def load_model():
 model, vectorizer = load_model()
 
 # ===============================
-# SIDEBAR MODEL STATISTICS
+# SIDEBAR MODEL STATS
 # ===============================
 
 st.sidebar.header("📊 Model Statistics")
@@ -130,34 +129,28 @@ st.sidebar.write(f"Accuracy: {round(accuracy*100,2)}%")
 
 # Accuracy Chart
 fig1, ax1 = plt.subplots()
-ax1.bar(["Accuracy"], [accuracy*100], color="#00ffff")
+ax1.bar(["Accuracy"], [accuracy*100])
 ax1.set_ylim([0,100])
-ax1.set_facecolor("#111")
-fig1.patch.set_facecolor("#111")
-ax1.tick_params(colors='white')
 st.sidebar.pyplot(fig1)
 
 # Confusion Matrix
 cm = confusion_matrix(y, y_pred)
 
 fig2, ax2 = plt.subplots()
-ax2.imshow(cm, cmap="magma")
+ax2.imshow(cm)
 ax2.set_xticks([0,1])
 ax2.set_yticks([0,1])
 ax2.set_xticklabels(["Ham","Spam"])
 ax2.set_yticklabels(["Ham","Spam"])
-ax2.set_facecolor("#111")
-fig2.patch.set_facecolor("#111")
-ax2.tick_params(colors='white')
 
 for i in range(2):
     for j in range(2):
-        ax2.text(j, i, cm[i,j], ha="center", va="center", color="white")
+        ax2.text(j, i, cm[i,j], ha="center", va="center")
 
 st.sidebar.pyplot(fig2)
 
 # ===============================
-# MAIN CHAT SECTION
+# MAIN APP
 # ===============================
 
 st.markdown("## 🤖 Spam Mail Detector AI")
@@ -188,7 +181,7 @@ for role, message in st.session_state.messages:
 st.markdown("---")
 
 # ===============================
-# FILE UPLOAD SECTION
+# FILE UPLOAD
 # ===============================
 
 st.markdown("## 📩 Upload Email File (.txt)")
@@ -204,6 +197,6 @@ if uploaded_file:
     prediction = model.predict(email_vector)
 
     if prediction[0] == 1:
-        st.markdown("<h3 style='color:#ff4b4b;'>❌ This file is SPAM</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:red;'>❌ This file is SPAM</h3>", unsafe_allow_html=True)
     else:
-        st.markdown("<h3 style='color:#00ff99;'>✅ This file is NOT SPAM</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:green;'>✅ This file is NOT SPAM</h3>", unsafe_allow_html=True)
