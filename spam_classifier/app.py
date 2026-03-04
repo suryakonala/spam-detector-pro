@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # ===============================
-# 🎨 THEME SWITCHER
+# THEME SWITCHER
 # ===============================
 
 theme = st.sidebar.radio(
@@ -19,94 +19,111 @@ theme = st.sidebar.radio(
     ["🌌 Neon Cyberpunk", "🌙 Dark Mode", "☀ Light Mode", "💎 Glass UI"]
 )
 
-# Theme colors
 if theme == "🌌 Neon Cyberpunk":
-    background = "linear-gradient(-45deg,#0f0c29,#302b63,#ff00cc,#00ffff)"
-    text = "#00ffff"
+    bg = "linear-gradient(-45deg,#0f0c29,#302b63,#ff00cc,#00ffff)"
+    text = "#ffffff"
     heading = "#ff00ff"
     card = "rgba(0,0,0,0.6)"
 
 elif theme == "🌙 Dark Mode":
-    background = "#0e1117"
+    bg = "#0e1117"
     text = "#ffffff"
     heading = "#00ffff"
-    card = "#1e1e1e"
+    card = "#1c1c1c"
 
 elif theme == "☀ Light Mode":
-    background = "#ffffff"
+    bg = "#ffffff"
     text = "#000000"
     heading = "#ff4b4b"
-    card = "#f3f3f3"
+    card = "#f5f5f5"
 
-else:  # Glass UI
-    background = "linear-gradient(to right,#141e30,#243b55)"
+else:
+    bg = "linear-gradient(to right,#141e30,#243b55)"
     text = "#ffffff"
     heading = "#00ffff"
     card = "rgba(255,255,255,0.1)"
 
 # ===============================
-# CSS
+# GLOBAL CSS FIX
 # ===============================
 
 st.markdown(f"""
 <style>
 
 .stApp {{
-    background: {background};
+background:{bg};
 }}
 
 h1,h2,h3 {{
-    color: {heading};
+color:{heading};
 }}
 
-p, label {{
-    color: {text};
+p, label, span {{
+color:{text};
 }}
-
-/* Sidebar */
-
-section[data-testid="stSidebar"] {{
-    background-color:#0a0a0a;
-}}
-
-/* Cards / containers */
 
 .block-container {{
-    padding-top:2rem;
+padding-top:2rem;
 }}
 
-div[data-testid="stFileUploader"] {{
-    background:{card};
-    padding:20px;
-    border-radius:10px;
+section[data-testid="stSidebar"] {{
+background:#000;
 }}
 
-/* Chat input */
+/* CHAT INPUT */
 
 div[data-testid="stChatInput"] textarea {{
-    background:#111;
-    color:#ffffff;
-    border:2px solid #ff00ff;
+background:#000 !important;
+color:#ffffff !important;
+border:2px solid #ff00ff !important;
 }}
 
 div[data-testid="stChatInput"] textarea::placeholder {{
-    color:#aaaaaa;
+color:#bbbbbb !important;
 }}
 
-/* Upload box */
+/* FILE UPLOADER */
+
+[data-testid="stFileUploader"] {{
+background:{card} !important;
+padding:20px;
+border-radius:10px;
+}}
 
 [data-testid="stFileUploaderDropzone"] {{
-    background:{card};
-    color:{text};
+background:#1e1e1e !important;
+color:#ffffff !important;
 }}
 
-/* Buttons */
+[data-testid="stFileUploaderDropzone"] span {{
+color:#ffffff !important;
+}}
+
+[data-testid="stFileUploaderDropzoneInstructions"] {{
+color:#ffffff !important;
+}}
+
+/* UPLOAD BUTTON */
+
+button[kind="secondary"] {{
+background:#ffffff !important;
+color:#000000 !important;
+border-radius:6px;
+}}
+
+/* NORMAL BUTTONS */
 
 div.stButton > button {{
-    background:#000;
-    color:#00ffff;
-    border:2px solid #ff00ff;
-    border-radius:8px;
+background:#000;
+color:#00ffff;
+border:2px solid #ff00ff;
+}}
+
+/* TEXT AREA */
+
+textarea {{
+background:#111 !important;
+color:#ffffff !important;
 }}
 
 </style>
@@ -125,7 +142,7 @@ def load_model():
 model, vectorizer = load_model()
 
 # ===============================
-# SIDEBAR STATS
+# SIDEBAR MODEL STATS
 # ===============================
 
 st.sidebar.header("📊 Model Statistics")
@@ -136,20 +153,18 @@ data['label'] = data['label'].map({'ham':0,'spam':1})
 X = vectorizer.transform(data['text'])
 y = data['label']
 
-y_pred = model.predict(X)
+pred = model.predict(X)
 
-acc = accuracy_score(y,y_pred)
+acc = accuracy_score(y,pred)
 
 st.sidebar.write(f"Accuracy: {round(acc*100,2)}%")
 
-# Accuracy chart
 fig,ax = plt.subplots()
 ax.bar(["Accuracy"],[acc*100])
 ax.set_ylim([0,100])
 st.sidebar.pyplot(fig)
 
-# Confusion matrix
-cm = confusion_matrix(y,y_pred)
+cm = confusion_matrix(y,pred)
 
 fig2,ax2 = plt.subplots()
 
@@ -162,8 +177,8 @@ ax2.set_xticklabels(["Ham","Spam"])
 ax2.set_yticklabels(["Ham","Spam"])
 
 for i in range(2):
-    for j in range(2):
-        ax2.text(j,i,cm[i,j],ha="center")
+ for j in range(2):
+  ax2.text(j,i,cm[i,j],ha="center")
 
 st.sidebar.pyplot(fig2)
 
@@ -222,9 +237,6 @@ if uploaded:
     pred = model.predict(vec)
 
     if pred[0]==1:
-
         st.error("❌ This file is SPAM")
-
     else:
-
         st.success("✅ This file is NOT SPAM")
